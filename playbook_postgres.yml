@@ -1,0 +1,72 @@
+---
+- hosts: all
+  vars:
+    db_name: produtos
+    user_name: joao
+    user_password: 123456
+  vars_files:
+    var_externa.yml
+  tasks:
+
+    - name: Instalar o Postgres
+      apt:
+        name: ['postgresql', "postgresql-contrib", "python3-psycopg2", "acl"]
+        state: present
+      become: yes
+
+    - name: Permitir que os usuarios criados se conectem localmentes
+      community.postgresql.postgresql_pg_hba:
+        dest: /etc/postgresql/12/main/pg_hba.conf
+        contype: host
+        users: all
+        databases: all
+        source: all
+        method: password
+        create: no
+      become: yes
+      register: postgres_phba
+
+    - name: Permitir que qualquer host se conecte na máquina
+      community.postgresql.postgresql_set:
+        name: listen_addresses
+        value: "{{ ips_permitidos }}"
+      become: yes
+      become_user: postgres
+      notify: Restart PostgresSQL
+
+    - name: Criar uma database com o nome de 'produtos'
+      community.postgresql.postgresql_db:
+        name: "{{ db_name }}"
+      become: yes
+      become_user: postgres
+
+    - name: Criar um usuário chamado joao para o db 'dados' com senha '123456' e com todas as permissões
+      community.postgresql.postgresql_user:
+        db: "{{ db_name }}"
+        name: "{{ user_name }}"
+        password: "{{ user_password }}"
+        priv: "ALL"
+      become: yes
+      become_user: postgres
+
+    - name: Criar uma tabela no banco de produtos
+      community.postgresql.postgresql_table:
+        db: "{{ db_name }}"
+        name: produtos_vendas
+        owner: "{{ user_name }}"
+      become: yes
+      become_user: postgres
+
+    - name: Restart do Postgres
+      service:
+        name: postgresql
+        state: restarted
+      become: yes
+      when: postgres_phba.changed
+
+  handlers:
+    - name: Restart PostgresSQL
+      service:
+        name: postgresql
+        state: restarted
+      become: yes

@@ -1,0 +1,17 @@
+---
+- hosts: all
+
+  tasks: 
+
+    - name: Instalar o NGINX
+      apt:
+        update_cache: yes
+        name: nginx
+        state: present
+      become: yes
+
+    - name: Stop do NGINX
+      service:
+        name: nginx
+        state: stopped
+      become: yes
