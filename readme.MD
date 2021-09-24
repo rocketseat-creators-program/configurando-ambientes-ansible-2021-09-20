@@ -1,6 +1,6 @@
 <img src="https://storage.googleapis.com/golden-wind/experts-club/capa-github.svg" />
 
-# Configurando máquinas com Ansible
+# Configurando ambientes com Ansible
 
 Quando falamos de IaC o Ansible já aparece como um forte protagonista nas rotinas, esta ferramenta vai ser responsável por configurar e instalar aplicações nas máquinas de forma rápida e eficiente, seguindo um modelo declarativo auxiliado por arquivos YAML.
 
